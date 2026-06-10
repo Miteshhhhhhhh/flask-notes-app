@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Notes</title>
+</head>
+<body>
+    <h1>My Notes</h1>
+    <a href="/add">Add New Note</a>
+    <br><br>
+
+    {% for note in notes %}
+        <div>
+            <h3>{{ note[1] }}</h3>
+            <p>{{ note[2] }}</p>
+        </div>
+    {% else %}
+        <p>Empty. Add note first!</p>
+    {% endfor %}
+
+    {% for note in notes  %}
+    <li>
+        <strong>{{ note[1] }}</strong>: {{ note[2] }}
+        <a href="/edit/{{ note[0] }}">Edit</a>
+        <a href="/delete/{{ note[0] }}">Delete</a>
+    </li>
+    {% endfor %}
+</body>
+</html>
