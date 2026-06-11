@@ -5,9 +5,18 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
+    search_query = request.args.get("search")
     conn = sqlite3.connect("notes.db")
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM notes")
+
+    if search_query:
+        search_term = "%" + search_query + "%"
+        cursor.execute(
+            "SELECT * FROM notes WHERE title LIKE ? OR content LIKE?",
+            (search_term , search_term))
+    else:
+        cursor.execute("SELECT * FROM notes")
+
     all_notes = cursor.fetchall()
     conn.close()
     return render_template("home.html", notes=all_notes)
@@ -19,7 +28,8 @@ def init_db():
     CREATE TABLE IF NOT EXISTS notes (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
-    content TEXT NOT NULL)
+    content TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)
     """)
     conn.commit()
     conn.close()
@@ -70,6 +80,7 @@ def edit_note(note_id):
     note = cursor.fetchone()
     conn.close()
     return render_template("edit_note.html", note=note)
+
 
 
 if __name__ == "__main__":
