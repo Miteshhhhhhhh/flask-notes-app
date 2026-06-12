@@ -1,25 +1,32 @@
-from flask import Flask, render_template, request , redirect
+from flask import Flask, render_template, request , redirect, session
 import sqlite3
 
 app = Flask(__name__)
+app.secret_key = "MIKI123"
 
 @app.route("/")
 def home():
+    print("session's data:", session)
+    if "username" not in session:
+        return redirect("/login")
+
+    username = session["username"]
     search_query = request.args.get("search")
     conn = sqlite3.connect("notes.db")
+    conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
     if search_query:
         search_term = "%" + search_query + "%"
         cursor.execute(
-            "SELECT * FROM notes WHERE title LIKE ? OR content LIKE?",
-            (search_term , search_term))
+            "SELECT * FROM notes WHERE username=? AND (title LIKE ? OR content LIKE?)",
+            (username, f"%{search_query}%" , f"%{search_query}%" ))
     else:
-        cursor.execute("SELECT * FROM notes")
+        cursor.execute("SELECT * FROM notes WHERE username = ?", (username,))
 
     all_notes = cursor.fetchall()
     conn.close()
-    return render_template("home.html", notes=all_notes)
+    return render_template("home.html", notes=all_notes, username=username)
 
 def init_db():
     conn = sqlite3.connect("notes.db")
@@ -29,6 +36,7 @@ def init_db():
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
     content TEXT NOT NULL,
+    username TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)
     """)
     conn.commit()
@@ -38,13 +46,19 @@ init_db()
 
 @app.route("/add", methods=["GET", "POST"])
 def add_note():
+    if "username" not in session:
+        return redirect("/login")
+
     if request.method == "POST":
         title = request.form['title']
         content = request.form['content']
+        username = session["username"]
 
         conn = sqlite3.connect("notes.db")
         cursor = conn.cursor()
-        cursor.execute("INSERT INTO notes (title, content) VALUES (?,?)", (title, content))
+        cursor.execute(
+            "INSERT INTO notes (title, content, username) VALUES (?,?,?)",
+            (title, content, username))
         conn.commit()
         conn.close()
         return redirect("/")
@@ -53,15 +67,23 @@ def add_note():
 
 @app.route("/delete/<int:note_id>")
 def delete_note(note_id):
+    if "username" not in session:
+        return redirect("/login")
+
+    username = session["username"]
     conn = sqlite3.connect("notes.db")
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM notes WHERE id=?", (note_id,))
+    cursor.execute("DELETE FROM notes WHERE id=? AND username=?", (note_id, username))
     conn.commit()
     conn.close()
     return redirect("/")
 
 @app.route("/edit/<int:note_id>", methods=["GET", "POST"])
 def edit_note(note_id):
+    if "username" not in session:
+        return redirect("/login")
+
+    username = session["username"]
     conn = sqlite3.connect("notes.db")
     cursor = conn.cursor()
 
@@ -70,16 +92,31 @@ def edit_note(note_id):
         new_content = request.form['content']
 
         cursor.execute(
-            "UPDATE notes SET title=?, content=? WHERE id=?",
-            (new_title, new_content, note_id)
+            "UPDATE notes SET title=?, content=? WHERE id=? AND username=?",
+            (new_title, new_content, note_id, username)
         )
         conn.commit()
         conn.close()
         return redirect("/")
-    cursor.execute("SELECT * FROM notes WHERE id=?", (note_id,))
+    cursor.execute("SELECT * FROM notes WHERE id=? AND username=?", (note_id, username))
     note = cursor.fetchone()
     conn.close()
+    if note is None:
+        return "This note is not yours", 403
     return render_template("edit_note.html", note=note)
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form["username"]
+        session["username"] = username
+        return redirect("/")
+    return render_template("login.html")
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/login")
 
 
 

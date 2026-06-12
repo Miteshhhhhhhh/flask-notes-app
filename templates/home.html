@@ -17,8 +17,10 @@
     {% for note in notes %}
         <div>
             <h3>{{ note[1] }}</h3>
+            <h2>Welcome, {{ username }}</h2>
             <p>{{ note[2] }}</p>
-            <p> <small>Created on: {{ note[3] }}</small></p>
+            <p> <small>Created on: {{ note["Created_at"] }}</small></p>
+            <a href="/logout">Logout</a>
             <a href="/edit/{{ note[0] }}">Edit</a>
             <a href="/delete/{{ note[0] }}">Delete</a>
         </div>
