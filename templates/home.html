@@ -5,6 +5,26 @@
 </head>
 <body>
     <h1>My Notes</h1>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for message in messages %}
+          <div style="background-color: #d4edda; color: #155724; padding: 12px; margin: 10px 0; border: 1px solid #c3e6cb; border-radius: 5px;">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+
+    <h2>Welcome, {{ username }}</h2>
+    <a href="/logout">Logout</a>
+
+
+    <h3 style="color: #495057; margin: 15px 0;">
+        Total Notes: {{ total }}
+    </h3>
+
     <a href="/add">Add New Note</a>
     <br><br>
 
@@ -17,16 +37,20 @@
     {% for note in notes %}
         <div>
             <h3>{{ note[1] }}</h3>
-            <h2>Welcome, {{ username }}</h2>
             <p>{{ note[2] }}</p>
-            <p> <small>Created on: {{ note["Created_at"] }}</small></p>
-            <a href="/logout">Logout</a>
+            <p><small>Created on: {{ note["Created_at"] }}</small></p>
             <a href="/edit/{{ note[0] }}">Edit</a>
             <a href="/delete/{{ note[0] }}">Delete</a>
         </div>
         <hr>
     {% else %}
-        <p>Empty. Add note first!</p>
+        <div style="text-align: center; margin-top: 50px; color: #6c757d;">
+            <h2>📝 No notes yet</h2>
+            <p>You haven't created any notes. Let's make your first one!</p>
+            <a href="/add" style="background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin-top: 10px;">
+                Create First Note
+            </a>
+        </div>
     {% endfor %}
 
 </body>

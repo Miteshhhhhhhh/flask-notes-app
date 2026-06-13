@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request , redirect, session
+from flask import Flask, render_template, request , redirect, session, flash
 import sqlite3
 
 app = Flask(__name__)
@@ -6,7 +6,6 @@ app.secret_key = "MIKI123"
 
 @app.route("/")
 def home():
-    print("session's data:", session)
     if "username" not in session:
         return redirect("/login")
 
@@ -23,10 +22,10 @@ def home():
             (username, f"%{search_query}%" , f"%{search_query}%" ))
     else:
         cursor.execute("SELECT * FROM notes WHERE username = ?", (username,))
-
     all_notes = cursor.fetchall()
+    total = len(all_notes)
     conn.close()
-    return render_template("home.html", notes=all_notes, username=username)
+    return render_template("home.html", notes=all_notes, username=username, total=total)
 
 def init_db():
     conn = sqlite3.connect("notes.db")
@@ -61,6 +60,7 @@ def add_note():
             (title, content, username))
         conn.commit()
         conn.close()
+        flash("Note added successfully")
         return redirect("/")
     return render_template("add_note.html")
 
@@ -110,12 +110,14 @@ def login():
     if request.method == "POST":
         username = request.form["username"]
         session["username"] = username
+        flash("Login Successful")
         return redirect("/")
     return render_template("login.html")
 
 @app.route("/logout")
 def logout():
     session.clear()
+    flash("Logged out successfully")
     return redirect("/login")
 
 
