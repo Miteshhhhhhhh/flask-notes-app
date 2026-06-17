@@ -1,8 +1,9 @@
 from flask import Flask, render_template, request , redirect, session, flash
 import sqlite3
+import os
 
 app = Flask(__name__)
-app.secret_key = "MIKI123"
+app.secret_key = os.environ.get("SECRET_KEY", "fallback-key-for-local-only")
 
 @app.route("/")
 def home():
@@ -123,4 +124,4 @@ def logout():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
