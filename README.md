@@ -11,13 +11,14 @@ A simple notes app built with Flask. Add and delete notes easily. Deployed on Re
 
 ### **Features**
 - Create new notes
-- View all notes on homepage  
+- View all notes on homepage
+- Edit existing notes
 - Delete notes
-- Notes stored in text file
+- Notes stored in SQLite database
 - Deployed on Render with Gunicorn
 
 ### **Tech Stack**
-Python, Flask, Gunicorn, HTML, Jinja2, Render
+Python, Flask, Gunicorn, HTML, Jinja2, SQLite, Render
 
 ### **How to Run Locally**
 1. **Clone the repo**
