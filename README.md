@@ -16,8 +16,15 @@ A simple notes app built with Flask. Add and delete notes easily. Deployed on Re
 - Delete notes
 - Notes stored in SQLite database
 - Deployed on Render with Gunicorn
+- **User Authentication** - Secure login/register with password hashing
+- **Search Notes** - Search by title or content using keywords
+- **Sort Notes** - Sort by newest first or oldest first
+- **Delete Confirmation** - JS popup to prevent accidental deletes
+- **Timestamps** - Auto-track created_at for each note
+- **User-specific Data** - Each user sees only their own notes
 
 ### **Tech Stack**
+**Auth:** Flask Sessions, Werkzeug
 Python, Flask, Gunicorn, HTML, Jinja2, SQLite, Render
 
 ### **How to Run Locally**
