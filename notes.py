@@ -11,22 +11,31 @@ def home():
         return redirect("/login")
 
     username = session["username"]
-    search_query = request.args.get("search")
+    search_query = request.args.get("search", "")
+    sort_order = request.args.get("sort", "newest")
+
     conn = sqlite3.connect("notes.db")
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 
+    base_query = "SELECT * FROM notes WHERE username =?"
+    params = [session["username"]]
+
     if search_query:
-        search_term = "%" + search_query + "%"
-        cursor.execute(
-            "SELECT * FROM notes WHERE username=? AND (title LIKE ? OR content LIKE?)",
-            (username, f"%{search_query}%" , f"%{search_query}%" ))
+        base_query += "AND (title LIKE? OR content LIKE?)"
+        params.extend([f"%{search_query}%", f"%{search_query}%"])
+
+    if sort_order == "oldest":
+        base_query += "ORDER BY created_at ASC"
     else:
-        cursor.execute("SELECT * FROM notes WHERE username = ?", (username,))
+        base_query += "ORDER BY created_at DESC"
+
+    cursor.execute(base_query, params)
     all_notes = cursor.fetchall()
     total = len(all_notes)
     conn.close()
-    return render_template("home.html", notes=all_notes, username=username, total=total)
+    return render_template("home.html", notes=all_notes, username=username, total=total, search_query=search_query, sort_order=sort_order)
+
 
 def init_db():
     conn = sqlite3.connect("notes.db")
